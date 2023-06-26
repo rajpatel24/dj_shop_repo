@@ -1,0 +1,5 @@
+.idea
+venv_dj_shop_repo
+# Compiled Python bytecode
+*.py[cod]
+*.pyc
