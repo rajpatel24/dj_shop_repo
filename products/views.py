@@ -18,9 +18,9 @@ from .utils import recommended_product_based_on_history
 class ProductListView(viewsets.ModelViewSet):
     http_method_names = [u'get']
     serializer_class = ProductSerializer
-    authentication_classes = [
-        authentication.TokenAuthentication
-    ]
+    # authentication_classes = [
+    #     authentication.TokenAuthentication
+    # ]
     permission_classes = [
         # permissions.IsAuthenticated,
         # IsDeliveryBoyOrCustomer
@@ -33,13 +33,18 @@ class ProductListView(viewsets.ModelViewSet):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
 
-        orders = Order.objects.filter(user=request.user)
-        if not orders:
-            rating_wise_recommended_products = Product.objects.order_by('-rating')[:5]
-            recommended_products = self.get_serializer(rating_wise_recommended_products, many=True)
+        if request.user.is_authenticated:
+            print("\n\n ===>>>>", request.user)
+            orders = Order.objects.filter(user=request.user)
+            if not orders:
+                rating_wise_recommended_products = Product.objects.order_by('-rating')[:5]
+                recommended_products = self.get_serializer(rating_wise_recommended_products, many=True)
+            else:
+                recommended_data = recommended_product_based_on_history(last_purchase_id=orders.first().product.product_id)
+                rating_wise_recommended_products = Product.objects.filter(product_id__in=recommended_data)
+                recommended_products = self.get_serializer(rating_wise_recommended_products, many=True)
         else:
-            recommended_data = recommended_product_based_on_history(last_purchase_id=orders.first().product.product_id)
-            rating_wise_recommended_products = Product.objects.filter(product_id__in=recommended_data)
+            rating_wise_recommended_products = Product.objects.order_by('-rating')[:5]
             recommended_products = self.get_serializer(rating_wise_recommended_products, many=True)
 
         # Add a static value 'Recommended' to each object in recommended_products
