@@ -27,7 +27,7 @@ class ProductListView(viewsets.ModelViewSet):
     ]
 
     def get_queryset(self):
-        return Product.objects.all()
+        return Product.objects.all()[200:500]
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
